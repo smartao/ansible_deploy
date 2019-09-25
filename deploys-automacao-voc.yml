@@ -1,0 +1,49 @@
+---
+- hosts: automacao
+
+  vars:
+    repo_url: https://github.com/smartao/automacao_voc
+    repo_version: master
+    app_dir: /usr/local/bin
+    project_name: automacao_voc
+    cron_dir: /etc/cron.d/
+    
+    app_name1: desliga_instancias
+    script1: desliga_instancias.sh
+    tag1: AUTOT1
+    cron_start_horario1: "0 8 * * 1-6"
+    cron_stop_horario1: "0 22 * * 1-6"
+    
+    app_name2: gera_inventario
+    script2: gera_inventario.sh
+    cron_horario2: "* * * * *"
+
+  tasks:
+  - name: Clonando repositorio
+    git:
+      repo: '{{ repo_url }}'
+      dest: /{{ app_dir }}/{{ project_name }}
+      version: '{{ repo_version }}'
+      clone: yes
+      force: yes
+
+  - name: Criar crontab para o app1, Desligar/Ligar instancias
+    blockinfile:
+      path: /{{ cron_dir }}/{{ project_name }}-{{ app_name1 }}
+      create: yes
+      block: |
+        PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+        # Automacao VOC desligamento/ligamento instancias, script padrao
+        {{ cron_start_horario1 }} root {{ app_dir }}/{{ project_name }}/{{ app_name1 }}/{{ script1 }} {{ tag1 }} start >/dev/null 2>&1
+        {{ cron_stop_horario1 }} root {{ app_dir }}/{{ project_name }}/{{ app_name1 }}/{{ script1 }} {{ tag1 }} stop >/dev/null 2>&1 
+
+  - name: Criar crontab para o app2, Gerar relatorio
+    blockinfile:
+      path: /{{ cron_dir }}/{{ project_name }}-{{ app_name2 }}
+      create: yes
+      block: |
+        PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+        # Geracao relatorio das instancais VOC, script padrao
+        {{ cron_horario2 }} root {{ app_dir }}/{{ project_name }}/{{ app_name2 }}/{{ script2 }} >/dev/null 2>&1
+
+

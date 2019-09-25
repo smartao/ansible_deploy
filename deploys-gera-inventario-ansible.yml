@@ -1,0 +1,28 @@
+---
+- hosts: automacao
+
+  vars:
+    repo_url: https://github.com/smartao/gera-inventario-ansible
+    repo_version: master
+    app_dir: /usr/local/bin
+    project_name: gera-inventario-ansible
+    app_name: gera-inventario
+    cron_dir: /etc/cron.d/
+    cron_horario: "0 * * * *"
+
+  tasks:
+  - name: Clonando repositorio
+    git:
+      repo: '{{ repo_url }}'
+      dest: /{{ app_dir }}/{{ project_name }}
+      version: '{{ repo_version }}'
+      clone: yes
+      force: yes
+
+  - name: Criar crontab para o script
+    blockinfile:
+      path: /{{ cron_dir }}/{{ project_name }}-{{ app_name }}
+      create: yes
+      block: |
+        PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+        {{ cron_horario }} root {{ app_dir }}/{{ project_name }}/{{ app_name }}.sh >/dev/null 2>&1 

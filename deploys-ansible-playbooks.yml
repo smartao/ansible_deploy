@@ -1,0 +1,18 @@
+---
+- hosts: automacao
+
+  vars:
+    repo_url: https://github.com/smartao/ansible-playbooks
+    repo_version: master
+    app_dir: /usr/local/bin/ansible-playbooks
+    app_name: ansible-playbooks
+
+  tasks:
+  - name: Clonando repositorio
+    git:
+      repo: '{{ repo_url }}'
+      dest: /{{ app_dir }}
+      version: '{{ repo_version }}'
+      clone: yes
+      force: yes
+
